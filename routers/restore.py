@@ -1,22 +1,14 @@
-from fastapi import APIRouter, UploadFile, File, Request
+from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import FileResponse
-import gridfs
 import cv2
 from gfpgan import GFPGANer as model
 from pathlib import Path
 import uuid
 import ssl
-import numpy as np
 
 # Disable SSL certificate verification
 ssl._create_default_https_context = ssl._create_unverified_context
 router = APIRouter()
-
-# async def saveFileToDB(file):
-#     #save image to database
-#     fs = gridfs.GridFS(Request.database, Request.collection)
-#     fileId = fs.put(file)
-#     return fileId
 
 class Restorer:
     """Restore images"""
