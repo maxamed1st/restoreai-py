@@ -14,15 +14,16 @@ class Restorer:
     """Restore images"""
     def __init__(self, image) -> None:
         print("RESTORER INIT")
+        self.img = image
         # Extract the file extension
-        _, imageExtension = image.filename.split(".")
+        _, imageExtension = self.img.filename.split(".")
         #save original and restored image
         # with randomly generated name
         #and the original file extension
-        self.origImgPath =  Path(str(uuid.uuid4())).with_suffix(".jpeg")
-        self.resImgPath = Path(str(uuid.uuid4())).with_suffix(".jpeg")
-        self.img = image
-        print("image saved")
+        origImgPath = "images/original/" + str(uuid.uuid4()) + "." + imageExtension
+        resImgPath = "images/restored/" + str(uuid.uuid4()) + "." + imageExtension
+        self.origImgPath = Path(origImgPath)
+        self.restImgPath = Path(resImgPath)
 
     async def main(self):
         #save image
@@ -30,14 +31,14 @@ class Restorer:
         #restore image
         await self.restoreImage()
         print("restored")
-        return self.resImgPath
-
+        return self.restImgPath
 
     async def saveImage(self):
         """Save file temporarily on the server"""
         imageData = await self.img.read()
         with open(self.origImgPath ,"wb") as f:
             f.write(imageData)
+        print("image saved")
         return self.origImgPath
 
     async def restoreImage(self):
@@ -48,9 +49,9 @@ class Restorer:
         croppedFaces, restoredFaces, restoredImg = model(".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth").enhance(img)
         print("result AVAILABLE")
         #save the restored image temporarily
-        cv2.imwrite(str(self.resImgPath), restoredImg)
+        cv2.imwrite(str(self.restImgPath), restoredImg)
         print("RESTORED IMAGE SAVED")
-        return self.resImgPath
+        return self.restImgPath
 
 @router.post("/restore/upload-image")
 async def getFile(image: UploadFile = File(...)):
