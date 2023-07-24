@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 from fastapi.responses import FileResponse
 import cv2
 from gfpgan import GFPGANer as model
@@ -12,7 +12,7 @@ router = APIRouter()
 
 class Restorer:
     """Restore images"""
-    def __init__(self, image) -> None:
+    def __init__(self, image, upscale) -> None:
         print("RESTORER INIT")
         self.img = image
         # Extract the file extension
@@ -24,6 +24,10 @@ class Restorer:
         resImgPath = "images/restored/" + str(uuid.uuid4()) + "." + imageExtension
         self.origImgPath = Path(origImgPath)
         self.restImgPath = Path(resImgPath)
+
+        #set enhancement factor
+        self.upscale = upscale
+        print("upscale", self.upscale)
 
     async def main(self):
         #save image
@@ -46,7 +50,10 @@ class Restorer:
         img = cv2.imread(str(self.origImgPath))
         print("image READ")
         # restore image
-        croppedFaces, restoredFaces, restoredImg = model(".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth").enhance(img)
+        croppedFaces, restoredFaces, restoredImg = model(
+            ".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth", 
+            self.upscale
+            ).enhance(img)
         print("result AVAILABLE")
         #save the restored image temporarily
         cv2.imwrite(str(self.restImgPath), restoredImg)
@@ -54,11 +61,11 @@ class Restorer:
         return self.restImgPath
 
 @router.post("/restore/upload-image")
-async def getFile(image: UploadFile = File(...)):
+async def getFile(image: UploadFile = File(...), upscale: int = Form(...)):
     #get image from client
     print("request received")
     #initialize Restorer
-    restorer = Restorer(image)
+    restorer = Restorer(image, upscale)
     #restore image
     outputPath = await restorer.main()
     return FileResponse(outputPath, headers={"Content-Disposition": "attachment; filename=result.png"})
