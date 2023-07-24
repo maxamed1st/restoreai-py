@@ -4,3 +4,5 @@
 /routers/__pycache__/
 .DS_Store
 .env
+testImages
+/gfpgan/
