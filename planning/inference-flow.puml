@@ -54,33 +54,41 @@ System_Boundary(mainSystem, "Main System") {
 
   skinparam ArrowFontColor white
   skinparam ArrowColor white
+  
   'attach events
   
   'subscribe to event
-
-  'upload image
+  
   skinparam ArrowFontColor green
   skinparam ArrowColor green
+  
+  'upload image
   client ---> api.postImg: "upload image"
   api.postImg ---> storage.images: "save image"
   api.emit ---> pubsub.notify: "image uploaded"
-  'restore image
+  
   skinparam ArrowFontColor gold
   skinparam ArrowColor gold
+  
+  'restore image
   pubsub.notify ---> gfpgan.recieve: "image uploaded"
   gfpgan.infer <--- storage.images: "restore image"
   gfpgan.infer ---> storage.images: "save restored image"
   gfpgan.emit ---> pubsub.notify: "image is restored"
-  'colorize image
+  
   skinparam ArrowFontColor red
   skinparam ArrowColor red
+  
+  'colorize image
   pubsub.notify ---> DeOldify.recieve: "image restored"
   DeOldify.infer <--- storage.images: "colorize image"
   DeOldify.infer ---> storage.images: "save colorized image"
   DeOldify.emit ---> pubsub.notify: "image colorized"
-  'return restored image to client
+  
   skinparam ArrowFontColor blue
   skinparam ArrowColor blue
+  
+  'return restored image to client
   pubsub.notify ---> webhook.recieve: "image colorized"
   webhook.forward ---> client: "image colorized"
   client ---> api.getImg: "download image"
