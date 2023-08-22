@@ -21,7 +21,6 @@ System_Boundary(mainSystem, "Main System") {
     Component(api.postImg, "POST_Image")
     Component(api.getImg, "GET_Image")
     Component(api.emit, "emit_event")
-    Component(api.recieve, "recieve_event")
   }
 
   Container_Boundary(pubsub, "PubSub") {
