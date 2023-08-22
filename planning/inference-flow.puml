@@ -53,6 +53,12 @@ System_Boundary(mainSystem, "Main System") {
     }
   }
 
+  skinparam ArrowFontColor white
+  skinparam ArrowColor white
+  'attach events
+  
+  'subscribe to event
+
   'upload image
   skinparam ArrowFontColor green
   skinparam ArrowColor green
@@ -79,7 +85,7 @@ System_Boundary(mainSystem, "Main System") {
   pubsub.notify ---> webhook.recieve: "image colorized"
   webhook.forward ---> client: "image colorized"
   client ---> api.getImg: "download image"
-  api.getImg ---> storage.images: "get restored image"
+  api.getImg <--- storage.images: "get restored image"
   api.getImg ---> client: "return restored image"
 }
 
