@@ -24,7 +24,7 @@ System_Boundary(mainSystem, "Main System") {
   }
 
   Container_Boundary(pubsub, "PubSub") {
-    Component(pubsub.susbscribe, "subscribe")
+    Component(pubsub.subscribe, "subscribe")
     Component(pubsub.attach, "attach")
     Component(pubsub.notify, "notify")
   }
@@ -52,12 +52,18 @@ System_Boundary(mainSystem, "Main System") {
     }
   }
 
-  skinparam ArrowFontColor white
-  skinparam ArrowColor white
+  skinparam ArrowFontColor gray
+  skinparam ArrowColor gray
   
   'attach events
-  
-  'subscribe to event
+  api -> pubsub.attach: "image uploaded"
+  gfpgan -> pubsub.attach: "image restored"
+  DeOldify -> pubsub.attach: "image colorized"
+
+  'subscribe to events
+  gfpgan --- pubsub.subscribe: "image uploaded"
+  DeOldify --- pubsub.subscribe: "image restored"
+  webhook --- pubsub.subscribe: "image colorized" 
   
   skinparam ArrowFontColor green
   skinparam ArrowColor green
