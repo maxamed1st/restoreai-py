@@ -1,6 +1,6 @@
 @startuml inference-flow
 
-title Restore Ai - BackEnd
+title Inference Flow
 
 set separator none
 
@@ -8,12 +8,14 @@ set separator none
 !include <C4/C4_Context>
 !include <C4/C4_Component>
 
+left to right direction
+
 skinparam BackgroundColor black
 skinparam DefaultFontColor gold
 
 Person(client, "client")
 
-System_Boundary(backend, "restore AI - Back End") {
+System_Boundary(mainSystem, "Main System") {
 
   Container_Boundary(api, "API") {
     Component(api.postImg, "POST_Image")
