@@ -1,0 +1,73 @@
+@startuml inference-flow
+
+title Restore Ai - BackEnd
+
+set separator none
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+Person(client, "client")
+
+System_Boundary(backend, "restore-ai: Back-End") {
+
+  Container_Boundary(api, "API") {
+    Component(api.postImg, "POST_Image")
+    Component(api.getImg, "GET_Image")
+    Component(api.emit, "emit_event")
+    Component(api.recieve, "recieve_event")
+  }
+
+  Container_Boundary(pubsub, "PubSub") {
+    Component(pubsub.susbscribe, "subscribe")
+    Component(pubsub.attach, "attach")
+    Component(pubsub.notify, "notify")
+  }
+
+  Container_Boundary(webhook, "Webhook") {
+    Component(webhook.recieve, "recieve_event")
+    Component(webhook.forward, "forward")
+  }
+
+  System_Boundary(storage, "Storage") {
+    Component(storage.images, "images")
+  }
+
+  System_Boundary(inference, "inference") {
+    Container_Boundary(gfpgan, "GFPGAN") {
+      Component(gfpgan.recieve, "recieve_event")
+      Component(gfpgan.infer, "infer")
+      Component(gfpgan.emit, "emit_event")
+    }
+
+    Container_Boundary(DeOldify, "DeOldify") {
+      Component(DeOldify.recieve, "recieve_event")
+      Component(DeOldify.infer, "infer")
+      Component(DeOldify.emit, "emit_event")
+    }
+  }
+
+  'upload image
+  client ---> api.postImg: "upload image"
+  api.postImg ---> storage.images: "save image"
+  api.emit ---> pubsub.notify: "image uploaded"
+  'restore image
+  pubsub.notify ---> gfpgan.recieve: "image uploaded"
+  gfpgan.infer <--- storage.images: "restore image"
+  gfpgan.infer ---> storage.images: "save restored image"
+  gfpgan.emit ---> pubsub.notify: "image is restored"
+  'colorize image
+  pubsub.notify ---> DeOldify.recieve: "image restored"
+  DeOldify.infer <--- storage.images: "colorize image"
+  DeOldify.infer ---> storage.images: "save colorized image"
+  DeOldify.emit ---> pubsub.notify: "image colorized"
+  'return restored image to client
+  pubsub.notify ---> webhook.recieve: "image colorized"
+  webhook.forward ---> client: "image colorized"
+  client ---> api.getImg: "download image"
+  api.getImg ---> storage.images: "get restored image"
+  api.getImg ---> client: "return restored image"
+}
+
+@enduml
