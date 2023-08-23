@@ -17,11 +17,6 @@ async def getFile(image: UploadFile = File(...), upscale: int = Form(...)):
     outputPath = await restore.restoration()
     return FileResponse(outputPath, headers={"Content-Disposition": "attachment; filename=result.png"})
 
-@router.get("/restore/webhook")
-def webhook():
-    #signal client when the file is ready for download
-    return "The image is ready for download"
-
 @router.get("/restore/restored-image")
 def restoredImage():
     #send the restored image
