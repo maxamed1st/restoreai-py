@@ -20,6 +20,7 @@ System_Boundary(mainSystem, "Main System") {
   Container_Boundary(api, "API") {
     Component(api.postImg, "POST_Image")
     Component(api.getImg, "GET_Image")
+    Component(api.saveImg, "save_image")
     Component(api.emit, "emit_event")
   }
 
@@ -70,7 +71,7 @@ System_Boundary(mainSystem, "Main System") {
   
   'upload image
   client ---> api.postImg: "upload image"
-  api.postImg ---> storage.images: "save image"
+  api.saveImg ---> storage.images: "save image"
   api.emit ---> pubsub.notify: "image uploaded"
   
   skinparam ArrowFontColor gold
