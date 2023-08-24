@@ -20,7 +20,7 @@ class Restore:
         image = cv2.imread(payload["image_path"])
         #restore image
         cropped_faces, restored_faces, restored_image = model(
-            ".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth", 
+            "gfpgan/weights/GFPGANv1.3.pth", 
             payload["upscale"]
             ).enhance(image)
         #save the restored image on the server
