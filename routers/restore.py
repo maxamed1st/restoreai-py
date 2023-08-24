@@ -1,21 +1,38 @@
 from fastapi import APIRouter, UploadFile, File, Form
-from fastapi.responses import FileResponse
-from inference import Restore
+import uuid
+from PubSub import EventHub
 import ssl
 
 # Disable SSL certificate verification
 ssl._create_default_https_context = ssl._create_unverified_context
 router = APIRouter()
+async def emit_event(message, payload):
+    EventHub().notify(message, payload)
+
+async def save_image(image: File(...)):
+    """Save image on the server"""
+
+    image_data = image.read()
+    _, imageExtension = image.filename.split(".")
+    image_path = "images/original/" + str(uuid.uuid4()) + "." + imageExtension
+
+    with open(image_path ,"wb") as f:
+        f.write(image_data)
+    print("image saved")
+    return image_path
 
 @router.post("/restore/upload-image")
-async def getFile(image: UploadFile = File(...), upscale: int = Form(...)):
-    #get image from client
+async def upload_image(image: UploadFile = File(...), upscale: int = Form(...)):
+    '''get image from client'''
     print("request received")
-    #initialize Restorer
-    restore = Restore(image, upscale)
-    #restore image
-    outputPath = await restore.restoration()
-    return FileResponse(outputPath, headers={"Content-Disposition": "attachment; filename=result.png"})
+
+    #save image
+    image_path = save_image(image)
+    #notify subscribers about image location
+    message = "image has been uploaded"
+    emit_event(message, {"path": image_path, "upscale": upscale})
+
+    return message
 
 @router.get("/restore/restored-image")
 def restoredImage():
