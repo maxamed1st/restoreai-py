@@ -6,7 +6,7 @@ import ssl
 # Disable SSL certificate verification
 ssl._create_default_https_context = ssl._create_unverified_context
 router = APIRouter()
-async def emit_event(message, payload):
+def emit_event(message, payload):
     EventHub().notify(message, payload)
 
 async def save_image(image: File(...)):
@@ -30,7 +30,7 @@ async def upload_image(image: UploadFile = File(...), upscale: int = Form(...)):
     image_path = await save_image(image)
     #notify subscribers about image location
     message = "image has been uploaded"
-    emit_event(message, {"path": image_path, "upscale": upscale})
+    emit_event(message, {"image_path": image_path, "upscale": upscale})
 
     return message
 

@@ -12,10 +12,10 @@ class Restore:
         EventHub().subscribe(self.main, message)
 
     @classmethod
-    async def _emit_event(message, payload):
+    def _emit_event(message, payload):
         EventHub().notify(message, payload)
 
-    async def main(self, payload) -> None:
+    def main(self, payload) -> None:
         #read image file
         image = cv2.imread(payload["image_path"])
         #restore image
