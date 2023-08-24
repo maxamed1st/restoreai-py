@@ -12,7 +12,7 @@ async def emit_event(message, payload):
 async def save_image(image: File(...)):
     """Save image on the server"""
 
-    image_data = image.read()
+    image_data = await image.read()
     _, imageExtension = image.filename.split(".")
     image_path = "images/original/" + str(uuid.uuid4()) + "." + imageExtension
 
@@ -27,7 +27,7 @@ async def upload_image(image: UploadFile = File(...), upscale: int = Form(...)):
     print("request received")
 
     #save image
-    image_path = save_image(image)
+    image_path = await save_image(image)
     #notify subscribers about image location
     message = "image has been uploaded"
     emit_event(message, {"path": image_path, "upscale": upscale})
