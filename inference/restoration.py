@@ -1,57 +1,34 @@
 import cv2
 from gfpgan import GFPGANer as model
-from pathlib import Path
-import uuid
+from PubSub import EventHub
 
 class Restore:
     """Restore images"""
-    def __init__(self, image, upscale) -> None:
+
+    def __init__(self) -> None:
         print("RESTORER INIT")
-        self.img = image
-        # Extract the file extension
-        _, imageExtension = self.img.filename.split(".")
-        #save original and restored image
-        # with randomly generated name
-        #and the original file extension
-        origImgPath = "images/original/" + str(uuid.uuid4()) + "." + imageExtension
-        resImgPath = "images/restored/" + str(uuid.uuid4()) + "." + imageExtension
-        self.origImgPath = Path(origImgPath)
-        self.restImgPath = Path(resImgPath)
+        #subscribe to "image has been uploaded" event
+        message = "image has been uploaded"
+        EventHub().subscribe(self.main, message)
 
-        #set enhancement factor
-        self.upscale = upscale
-        print("upscale", self.upscale)
+    @classmethod
+    async def _emit_event(message, payload):
+        EventHub().notify(message, payload)
 
-    async def restoration(self):
-        #save image
-        await self.saveImage()
-        #restore image
-        await self.restoreImage()
-        print("restored")
-        return self.restImgPath
-
-    async def saveImage(self):
-        """Save file temporarily on the server"""
-        imageData = await self.img.read()
-        with open(self.origImgPath ,"wb") as f:
-            f.write(imageData)
-        print("image saved")
-        return self.origImgPath
-
-    async def restoreImage(self):
+    async def main(self, payload) -> None:
         #read image file
-        img = cv2.imread(str(self.origImgPath))
-        print("image READ")
-        # restore image
-        croppedFaces, restoredFaces, restoredImg = model(
+        image = cv2.imread(payload.image_path)
+        #restore image
+        cropped_faces, restored_faces, restored_image = model(
             ".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth", 
-            self.upscale
-            ).enhance(img)
-        print("result AVAILABLE")
-        #save the restored image temporarily
-        cv2.imwrite(str(self.restImgPath), restoredImg)
-        print("RESTORED IMAGE SAVED")
-        return self.restImgPath
+            payload.upscale
+            ).enhance(image)
+        #save the restored image on the server
+        cv2.imwrite(str(self.restored_image_path), restored_image)
+        #notify subscribers about image location
+        message = "image is restored"
+        self.emit_event(message, {"path": self.restored_image_path})
+
 
 if __name__ == "__main__":
     Restore()
