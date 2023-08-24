@@ -17,11 +17,11 @@ class Restore:
 
     async def main(self, payload) -> None:
         #read image file
-        image = cv2.imread(payload.image_path)
+        image = cv2.imread(payload["image_path"])
         #restore image
         cropped_faces, restored_faces, restored_image = model(
             ".venv/lib/python3.11/site-packages/gfpgan/weights/GFPGANv1.3.pth", 
-            payload.upscale
+            payload["upscale"]
             ).enhance(image)
         #save the restored image on the server
         cv2.imwrite(str(self.restored_image_path), restored_image)
